@@ -1,4 +1,4 @@
-# Nu primesc notă pentru că nu am pus titlu și descriere
+# Apple Day (Farm Game Simulator)
 
 ### Folosiți template-ul corespunzător grupei voastre!
 

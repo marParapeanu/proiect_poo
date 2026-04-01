@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 class Planta {
     std::string numePlanta;
@@ -17,7 +18,7 @@ public:
 
 
     friend std::ostream& operator << (std::ostream& os, const Planta& p) {
-        os << "Planta " << p.numePlanta << " are " << p.zileMaturitate << " zile, se afla in stadiu de crestere " << p.stadiuCrestere;
+        os << "Planta " << p.numePlanta << " are " << p.stadiuCrestere << " zile";
         return os;
     }
 
@@ -31,22 +32,45 @@ class Parcela {
     bool esteOcupata; //daca avem ceva plantat versurs daca parcela e goala
 public:
     Parcela() : plantaCrt("Nicio planta", 0), esteOcupata(false){}
+
+    friend std::ostream& operator << (std::ostream& os, const Parcela& p) {
+        if (p.esteOcupata) {
+            os << "Ocupata: " << p.plantaCrt;
+        }
+        else
+            os << "Parcela este goala.\n";
+        return os;
+    }
 };
 
 class Hambar {
-
+    std::map<std::string, int> inventar;
+public:
+    void adaugaRecolta(const std::string& numePlanta) { inventar[numePlanta]++; }
+    friend std::ostream& operator<<(std::ostream& os, Hambar &h) {
+        os << "Hambar: " << "\n";
+        if (h.inventar.empty()){ os << "Hambarul este gol!\n";}
+        else {
+            for (const auto& pereche : h.inventar) {
+                os << pereche.first << " : " << pereche.second << "bucati\n";
+            }
+        }
+        return os;
+    }
 };
 
 class Ferma {
+    std::string numeFerma;
     Hambar hambar;
     int ziuaCurenta;
     int numarParcele;
     Parcela* parcele; //pointer catre heap
 public:
+    Ferma() {}
     Ferma(int nrParcele) : ziuaCurenta(0), numarParcele(nrParcele) {
         parcele = new Parcela[numarParcele]; //parcele = pointer catre primul element din array
     }
-    ~Ferma() { delete[] parcele; }
+    ~Ferma() { delete[] parcele; parcele = nullptr;}
 
     void extindeFerma(int parceleAdaugate) {
         if (parceleAdaugate <= 0) {
@@ -63,10 +87,18 @@ public:
         std::cout << "Ferma a fost extinsa cu succes! Numar curent de parcele: " << numarParcele << "\n";
 
     }
+
+    friend std::ostream& operator<<(std::ostream &os, Ferma &f) {
+        os << "Ferma: " << f.numeFerma << "\n";
+        os << "Ziua curenta: " << f.ziuaCurenta << "\n";
+        os << "Numar parcele: " << f.numarParcele << "\n";
+        os << "Hambar: " << f.hambar << "\n";
+    }
 };
 
 
 int main() {
+    Ferma ferma1;
     Planta p("Rosie", 5);
     std::cout << "\n";
     std::cout << p;

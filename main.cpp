@@ -1,114 +1,75 @@
 #include <iostream>
-#include <utility>
 #include <vector>
-#include <string>
-//#include <ctime>
-#include <stdexcept>
-#include <chrono>
+#include <algorithm>
 
-class data {
-    int zi;
-    int luna;
-    int an;
-    static bool validareData(int z, int l, int a); // definita cu static ptc apartine clasei in sine
+class Planta {
+    std::string numePlanta;
+    int zileMaturitate; //cate zile e nevoie pana ajunge la maturitate
+    int stadiuCrestere;
+    int nivelApa;
 public:
-    data(int zi_, int luna_, int an_)  {
-        if (validareData(zi_, luna_, an_)) {
-            zi = zi_;
-            luna = luna_;
-            an = an_;
+    Planta(const std::string& numeP, int zileM) :
+    numePlanta(numeP), zileMaturitate(zileM), stadiuCrestere(0), nivelApa(0) {}
+
+    int get_zileMaturitate() const {return zileMaturitate;}
+    int get_stadiuCrestere() const {return stadiuCrestere;}
+    int get_nivelApa() const {return nivelApa;}
+
+
+    friend std::ostream& operator << (std::ostream& os, const Planta& p) {
+        os << "Planta " << p.numePlanta << " are " << p.zileMaturitate << " zile, se afla in stadiu de crestere " << p.stadiuCrestere;
+        return os;
+    }
+
+    void cresteZi(){ stadiuCrestere++;}
+    bool esteMatura() const {return stadiuCrestere >= zileMaturitate;}
+
+};
+
+class Parcela {
+    Planta plantaCrt;
+    bool esteOcupata; //daca avem ceva plantat versurs daca parcela e goala
+public:
+    Parcela() : plantaCrt("Nicio planta", 0), esteOcupata(false){}
+};
+
+class Hambar {
+
+};
+
+class Ferma {
+    Hambar hambar;
+    int ziuaCurenta;
+    int numarParcele;
+    Parcela* parcele; //pointer catre heap
+public:
+    Ferma(int nrParcele) : ziuaCurenta(0), numarParcele(nrParcele) {
+        parcele = new Parcela[numarParcele]; //parcele = pointer catre primul element din array
+    }
+    ~Ferma() { delete[] parcele; }
+
+    void extindeFerma(int parceleAdaugate) {
+        if (parceleAdaugate <= 0) {
+            std::cout << "Dimensiune interzisa! Trebuie sa adaugi cel putin o parcela!";
+            return;
         }
-        else {zi = 0; luna = 0; an = 0;}
+        int capacitateNoua = this->numarParcele + parceleAdaugate; //parcelele initiale plus parcelele pe care vrem sa le adaugam
+        Parcela *parceleNoi = new Parcela[capacitateNoua]; //aloc un nou bloc de memorie avand noua capacitate
+        std::move(parcele, parcele+numarParcele, parceleNoi); //
+
+        delete[] parcele; //dezaloc vechia memorie unde erau puse parcelele
+        parcele = parceleNoi;
+        numarParcele = capacitateNoua;
+        std::cout << "Ferma a fost extinsa cu succes! Numar curent de parcele: " << numarParcele << "\n";
+
     }
 };
-
-bool data::validareData(int z, int l, int a) {
-    if (a < 0) return false;
-    if (l > 12 || l < 1) return false;
-    if (z > 31 || z < 1) return false;
-    if (z == 31 && (l == 4 || l == 6 || l == 9 || l == 11)) return false;
-    if (a % 400 == 0 || (a % 4 == 0 && a % 100 != 0)) {
-        if (l == 2 && z > 29) return false;
-    }
-    else if (l == 2 && z > 28) return false;
-    return true;
-}
-
-class nrTelefon {
-    std::string nr;
-    std::string prefix;
-public:
-    nrTelefon() : nr("unknown"), prefix("+40") {} //constructor fara parametri pentru numerele de telefon necunoscute
-    explicit nrTelefon(const std::string &numar, const std::string &pref = "+40") {
-        if (numar.length() != 9) {
-            throw std::invalid_argument("Numarul trebuie sa aiba 10 cifre!");
-        }
-        for (char c : numar)
-            if (!isdigit(c))
-                throw std::invalid_argument("Numar invalid!");
-
-        nr = numar;
-        prefix = pref;
-    }//constructor de initializare nr de Telefon, cu validari
-
-    std::string get_nr() const { return prefix + " " + nr;}
-
-};
-
-class CardBancar {
-    std::string nrCard;
-    int cvc;
-    data dataExpirarii;
-public:
-    CardBancar(std::string numar, int codCVC, const data &exp) : nrCard(std::move(numar)), cvc(codCVC), dataExpirarii(exp){}
-};
-
-class Depozit {
-    data dataDeschidere;
-    data dataInchidere;
-    float rata;
-    std::string moneda;
-public:
-    Depozit(const data &dataD, const data &dataI, float r, std::string &m)
-    : dataDeschidere(dataD), dataInchidere(dataI), rata(r), moneda(m){}
-
-};
-
-class ContBancar {
-    double sold;
-    std::string moneda;
-    std::vector<CardBancar> carduri;
-    std::vector<Depozit> depozite;
-public:
-    explicit ContBancar(std::string m) : sold(0), moneda(std::move(m)){}
-    double getSold() const {return sold;}
-
-};
-
-class Client {
-    std::string numeClient;
-    std::string prenumeClient;
-    nrTelefon telefon;
-    std::vector <ContBancar> conturi;
-
-public:
-    Client(std::string nume, std::string prenume, nrTelefon tel) : numeClient(std::move(nume)), prenumeClient(std::move(prenume)), telefon(std::move(tel)) {
-        std::cout << "Constructor de initializare cu parametri pentru client\n";
-    }
-    //nu vrem sa avem un constructor fara parametri sau un constructor cu parametri impliciti aici pentru ca nu vrem sa avem un obiect de tip Client depsre care sa nu stim nimic
-    //ca atare, este obligatoriu sa introducem informatii la construire
-    const std::string &getNume() const { return numeClient; }
-    const std::string &getPrenume() const {return prenumeClient;}
-    const nrTelefon &getTelefon() const { return telefon;}
-
-};
-
 
 
 int main() {
-    Client client1("Paun", "Mariana", nrTelefon("720747100"));
-    std::cout << client1.getNume() << " " << client1.getPrenume() << " "  << client1.getTelefon().get_nr();
-
+    Planta p("Rosie", 5);
+    std::cout << "\n";
+    std::cout << p;
 
 
     //std::array<int, 100> v{};

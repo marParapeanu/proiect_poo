@@ -9,21 +9,36 @@ class Planta {
     std::string categorie; //Leguma, Fruct, Floare
     int zileMaturitate; //cate zile e nevoie pana ajunge la maturitate
     int stadiuCrestere;
-    //int nivelApa;
+    bool nivelApa;
+    bool traieste;
 public:
     Planta(std::string  numeP, std::string cat, int zileM) :
-    numePlanta(std::move(numeP)), categorie(std::move(cat)), zileMaturitate(zileM), stadiuCrestere(0) {} //nivelApa de adaugat dupa warninguri
+    numePlanta(std::move(numeP)), categorie(std::move(cat)), zileMaturitate(zileM), stadiuCrestere(0), nivelApa(false), traieste(true) {}
 
     [[nodiscard]] std::string getNume() const { return this -> numePlanta; }
     [[nodiscard]] std::string getCategorie() const { return this -> categorie; }
+    [[nodiscard]] bool isAlive() const {return this -> traieste; }
+    [[nodiscard]] bool esteMatura() const {return stadiuCrestere >= zileMaturitate;}
 
-    friend std::ostream& operator << (std::ostream& os, const Planta& p) {
-        os << "[ " << p.categorie << " ] : " << p.numePlanta << " are " << p.stadiuCrestere << " zile";
-        return os;
+    void udaPlanta()  {nivelApa = true; }
+    void cresteZi() {
+        if (!traieste) return;
+        if (nivelApa) {
+            stadiuCrestere++;
+            nivelApa = false;
+        }
+        else traieste = false;
     }
 
-    void cresteZi(){ stadiuCrestere++;}
-    [[nodiscard]] bool esteMatura() const {return stadiuCrestere >= zileMaturitate;}
+    friend std::ostream& operator << (std::ostream& os, const Planta& p) {
+        if (!p.traieste) {
+            os << "[ MOARTA ] " << p.numePlanta << "\n";
+        }
+        else
+            os << "[ " << p.categorie << " ] : " << p.numePlanta << " are " << p.stadiuCrestere << " zile. /" <<
+                (p.nivelApa == 0 ? " [ TREBUIE UDATA ] " : " [ ESTE UDATA ] ");
+        return os;
+    }
 
 };
 
@@ -38,15 +53,23 @@ public:
     }
     [[nodiscard]] bool isOcupata() const {return esteOcupata;}
     void ingrijestePlanta() {
+        if (esteOcupata) plantaCrt.udaPlanta();
+    }
+    void treciZiua() {
         if (esteOcupata) plantaCrt.cresteZi();
     }
-    [[nodiscard]] bool gataDeRecoltat() const { return esteOcupata && plantaCrt.esteMatura();}
+    // void curataParcela() {
+    //     esteOcupata = false;
+    //     plantaCrt = Planta("Nicio planta", "-", 0);
+    // }
+    [[nodiscard]] bool gataDeRecoltat() const { return esteOcupata && plantaCrt.esteMatura() && plantaCrt.isAlive();}
     std::string recolteaza() {
         std::string nume = plantaCrt.getNume();
         esteOcupata = false;
         plantaCrt = Planta("Nicio planta", "-", 0);
         return nume;
     }
+    [[nodiscard]] std::string numePlanta() const {return plantaCrt.getNume();}
     friend std::ostream& operator << (std::ostream& os, const Parcela& p) {
         if (p.esteOcupata) {
             os << "Ocupata: " << p.plantaCrt;
@@ -62,11 +85,11 @@ class Hambar {
 public:
     void adaugaRecolta(const std::string& numePlanta) { inventar[numePlanta]++; }
     friend std::ostream& operator<<(std::ostream& os, const Hambar &h) {
-        os << "Hambar: " << "\n";
+        //os  << "\n";
         if (h.inventar.empty()){ os << "Hambarul este gol!\n";}
         else {
             for (const auto& pereche : h.inventar) {
-                os << pereche.first << " : " << pereche.second << "bucati\n";
+                os << pereche.first << " - " << pereche.second << " buc\n";
             }
         }
         return os;
@@ -88,7 +111,7 @@ public:
         parcele = new Parcela[numarParcele]; //parcele = pointer catre primul element din array
         std::cout << "Bine ai venit la ferma: " << numeFerma << "!\n";
         std::cout << "Ziua " << ziuaCurenta << "\n";
-        std::cout << "Numar parcele: " << numarParcele;
+        std::cout << "Numar parcele: " << numarParcele << "\n";
     }
     Ferma(const Ferma& other) : //constructor de copiere, salvarea progresului pentru a putea reseta greseli
     numeFerma(other.numeFerma),
@@ -114,10 +137,6 @@ public:
         int capacitateNoua = this->numarParcele + parceleAdaugate; //parcelele initiale plus parcelele pe care vrem sa le adaugam
         auto *parceleNoi = new Parcela[capacitateNoua]; //aloc un nou bloc de memorie avand noua capacitate
         std::move(parcele, parcele+numarParcele, parceleNoi);
-         // for (int i = 0; i < numarParcele; i++) {
-         //     parceleNoi[i] = parcele[i];
-         // }
-
         delete[] parcele; //dezaloc vechia memorie unde erau puse parcelele
         parcele = parceleNoi;
         numarParcele = capacitateNoua;
@@ -140,6 +159,42 @@ public:
         }
     }
 
+    void udaParcela(int index) {
+        if (index < 0 || index >= numarParcele) return;
+        if (parcele[index].isOcupata()) {
+            parcele[index].ingrijestePlanta();
+            std::cout << "Ai udat planta " << parcele[index].numePlanta() << " de pe parcela " << index << "\n";
+        }
+        else std::cout << "Parcela e goala, ai udat degeaba !\n";
+    }
+
+    void recolteaza(int index) {
+        if (index < 0 || index >= numarParcele) return;
+        if (!parcele[index].isOcupata()) {
+            std::cout << "Parcela " << index << " este goala, nu ai ce recolta!\n";
+            return;
+        }
+        if (parcele[index].gataDeRecoltat()) {
+            std::string numeRecolta = parcele[index].recolteaza();
+            hambar.adaugaRecolta(numeRecolta);
+            std::cout << "[ ACTIUNE ]: Ai recoltat " << parcele[index].numePlanta() << " de pe parcela " << index << "\n";
+
+        }
+        else std::cout << "Planta nu poate fi recoltata!\n";
+    }
+
+    void ziuaUrmatoare() {
+        std::cout << "Ziua " << ziuaCurenta << " s-a terminat!\n";
+        ziuaCurenta++;
+        std::cout << "A inceput ziua " << ziuaCurenta << " !\n";
+        for (int i = 0; i < numarParcele; i++) {
+            if (parcele[i].isOcupata()) {
+                parcele[i].treciZiua();
+            }
+        }
+
+    }
+
     friend std::ostream& operator<<(std::ostream &os, const Ferma &f) {
         os << "Ferma: " << f.numeFerma << "\n";
         os << "Ziua curenta: " << f.ziuaCurenta << "\n";
@@ -152,20 +207,41 @@ public:
 
 
 int main() {
-    std::string numeFerma;
-    std::cout << "Introdu numele fermei tale!: ";
-    std::cin  >> numeFerma;
-    Ferma fermaMea(numeFerma, 5);
-    Planta rosie("Rosie", "Leguma", 3);
-    Planta lalea("Lalea", "Floare", 2);
-    fermaMea.planteaza(0, rosie);
-    fermaMea.planteaza(1, lalea);
-    fermaMea.planteaza(2, rosie);
-    fermaMea.planteaza(3, rosie);
-    fermaMea.planteaza(4, lalea);
-    fermaMea.planteaza(5,lalea);
-    fermaMea.extindeFerma(1);
-    std::cout << fermaMea;
+    // std::string numeFerma;
+    // std::cout << "Introdu numele fermei tale!: ";
+    // std::cin  >> numeFerma;
+    // Ferma fermaMea(numeFerma, 5);
+    // Planta rosie("Rosie", "Leguma", 3);
+    // Planta lalea("Lalea", "Floare", 2);
+    // fermaMea.planteaza(0, rosie);
+    // fermaMea.planteaza(1, lalea);
+    // fermaMea.planteaza(2, rosie);
+    // fermaMea.planteaza(3, rosie);
+    // fermaMea.planteaza(4, lalea);
+    // fermaMea.planteaza(5,lalea);
+    // fermaMea.extindeFerma(1);
+    // std::cout << fermaMea;
+
+
+        Ferma fermaMea("Mar", 3);
+        Planta rosie("Rosie", "Leguma", 2); // creste în 2 zile
+
+        fermaMea.planteaza(0, rosie);
+        // Ziua 1
+        fermaMea.udaParcela(0);
+        fermaMea.ziuaUrmatoare();
+        fermaMea.extindeFerma(3);
+
+        // Ziua 2 - Ajunge la maturitate!
+        fermaMea.udaParcela(0);
+        fermaMea.ziuaUrmatoare();
+        std::cout << "\n[Inainte de recoltare manuala]\n" << fermaMea;
+        fermaMea.recolteaza(0);
+
+        // Afisam din nou ca sa vedem ca Parcela 0 s-a golit si Hambarul s-a umplut
+        std::cout << "\n[Dupa recoltare manuala]\n" << fermaMea;
+
+        return 0;
 
 
 
@@ -213,5 +289,5 @@ int main() {
     ///     fis >> v2[i];
     ///
     ///////////////////////////////////////////////////////////////////////////
-    return 0;
+
 }

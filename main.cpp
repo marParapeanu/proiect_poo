@@ -136,7 +136,8 @@ public:
         }
         int capacitateNoua = this->numarParcele + parceleAdaugate; //parcelele initiale plus parcelele pe care vrem sa le adaugam
         auto *parceleNoi = new Parcela[capacitateNoua]; //aloc un nou bloc de memorie avand noua capacitate
-        std::move(parcele, parcele+numarParcele, parceleNoi);
+        if (parcele != nullptr)
+            std::move(parcele, parcele+numarParcele, parceleNoi);
         delete[] parcele; //dezaloc vechia memorie unde erau puse parcelele
         parcele = parceleNoi;
         numarParcele = capacitateNoua;
@@ -177,7 +178,7 @@ public:
         if (parcele[index].gataDeRecoltat()) {
             std::string numeRecolta = parcele[index].recolteaza();
             hambar.adaugaRecolta(numeRecolta);
-            std::cout << "[ ACTIUNE ]: Ai recoltat " << parcele[index].numePlanta() << " de pe parcela " << index << "\n";
+            std::cout << "[ ACTIUNE ]: Ai recoltat " << numeRecolta << " de pe parcela " << index << "\n";
 
         }
         else std::cout << "Planta nu poate fi recoltata!\n";
@@ -192,21 +193,73 @@ public:
                 parcele[i].treciZiua();
             }
         }
+    }
 
+    Ferma& operator=(const Ferma& other) {
+        if (this == &other) {
+            return *this;
+        }
+
+        delete[] parcele;
+        numeFerma = other.numeFerma;
+        hambar = other.hambar;
+        ziuaCurenta = other.ziuaCurenta;
+        numarParcele = other.numarParcele;
+        if (other.numarParcele > 0 && other.parcele != nullptr) {
+            parcele = new Parcela[other.numarParcele];
+            for (int i = 0; i < other.numarParcele; i++)
+                parcele[i] = other.parcele[i];
+        }
+        else parcele = nullptr;
+        std::cout << "Ferma a fost suprascrisa! (Load Game reusit)\n";
+        return *this;
     }
 
     friend std::ostream& operator<<(std::ostream &os, const Ferma &f) {
         os << "Ferma: " << f.numeFerma << "\n";
         os << "Ziua curenta: " << f.ziuaCurenta << "\n";
-        os << "Numar parcele: " << f.numarParcele << "\n";
         os << "Hambar: " << f.hambar << "\n";
-
+        os << "TEREN: " << f.numarParcele << " parcele\n";
+        for (int i = 0; i < f.numarParcele; i++)
+            if (f.parcele != nullptr)
+                os << "Parcela " << i << " -> " << f.parcele[i] << "\n"; //apeleaza operatorul din Parcela
         return os;
     }
 };
 
 
 int main() {
+
+    std::string numeFerma;
+    std::cout << "Introdu numele fermei tale!: ";
+    std::cin >> numeFerma;
+    Ferma fermaMea(numeFerma, 3);
+
+    Planta rosie("Rosie", "Leguma", 2);
+    Planta lalea("Lalea", "Floare", 2);
+    Planta gaina("Gaina", "Animal", 5);
+
+    fermaMea.planteaza(0, rosie);
+    fermaMea.planteaza(1, lalea);
+    fermaMea.planteaza(2, gaina);
+
+    fermaMea.udaParcela(0);
+    fermaMea.udaParcela(1);
+    fermaMea.ziuaUrmatoare();
+    Ferma salvareZiua1 = fermaMea;
+
+    fermaMea.udaParcela(0);
+    fermaMea.ziuaUrmatoare();
+
+    fermaMea.recolteaza(0);
+    fermaMea.recolteaza(1);
+
+    std::cout << "Ai pierdut laleaua, asa ca dam Load Game la Ziua 1!\n";
+    fermaMea = salvareZiua1;
+    fermaMea.extindeFerma(2);
+    std::cout << "\n[ Starea Finala ]\n" << fermaMea;
+    return 0;
+
     // std::string numeFerma;
     // std::cout << "Introdu numele fermei tale!: ";
     // std::cin  >> numeFerma;
@@ -223,25 +276,25 @@ int main() {
     // std::cout << fermaMea;
 
 
-        Ferma fermaMea("Mar", 3);
-        Planta rosie("Rosie", "Leguma", 2); // creste în 2 zile
-
-        fermaMea.planteaza(0, rosie);
-        // Ziua 1
-        fermaMea.udaParcela(0);
-        fermaMea.ziuaUrmatoare();
-        fermaMea.extindeFerma(3);
-
-        // Ziua 2 - Ajunge la maturitate!
-        fermaMea.udaParcela(0);
-        fermaMea.ziuaUrmatoare();
-        std::cout << "\n[Inainte de recoltare manuala]\n" << fermaMea;
-        fermaMea.recolteaza(0);
-
-        // Afisam din nou ca sa vedem ca Parcela 0 s-a golit si Hambarul s-a umplut
-        std::cout << "\n[Dupa recoltare manuala]\n" << fermaMea;
-
-        return 0;
+        // Ferma fermaMea("Mar", 3);
+        // Planta rosie("Rosie", "Leguma", 2); // creste în 2 zile
+        //
+        // fermaMea.planteaza(0, rosie);
+        // // Ziua 1
+        // fermaMea.udaParcela(0);
+        // fermaMea.ziuaUrmatoare();
+        // fermaMea.extindeFerma(3);
+        //
+        // // Ziua 2 - Ajunge la maturitate!
+        // fermaMea.udaParcela(0);
+        // fermaMea.ziuaUrmatoare();
+        // std::cout << "\n[Inainte de recoltare manuala]\n" << fermaMea;
+        // fermaMea.recolteaza(0);
+        //
+        // // Afisam din nou ca sa vedem ca Parcela 0 s-a golit si Hambarul s-a umplut
+        // std::cout << "\n[Dupa recoltare manuala]\n" << fermaMea;
+        //
+        // return 0;
 
 
 

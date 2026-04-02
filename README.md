@@ -1,5 +1,10 @@
 # Apple Day (Farm Game Simulator)
 
+# Descriere:
+Simularea unui joc tip ferma (asemanator cu HayDay sau Stardew Valley) in consola. Jucatorul isi poate construi si dezovolta propria ferma, avand la dispozitie posibilitati precum plantare, recoltare si depozitare in hambar, extindere de ferma, dar si ingrijirea unor animale care vor produce la randul lor bunuri.
+
+// Nu stiu inca daca voi implementa si interfata grafica! 
+
 ### Folosiți template-ul corespunzător grupei voastre!
 
 | Laborant  | Link template                                |

@@ -4,6 +4,31 @@
 #include <algorithm>
 #include <map>
 
+class Portofel {
+    int bani;
+public:
+    Portofel() : bani(100) {}
+    [[nodiscard]] int getBani() const {return bani;}
+    void adaugaBani(int suma) {
+        if (suma > 0) bani += suma;
+    }
+    bool cheltuie(int suma) {
+        if (suma > 0) {
+            if (suma <= this -> bani) {
+                bani -= suma;
+                return true;
+            }
+        }
+        std::cout << "Fonduri insuficiente!\n";
+        return false;
+
+    }
+    friend std::ostream& operator<<(std::ostream& os, const Portofel& p) {
+        os << "BANI: " << p.bani << " monede";
+        return os;
+    }
+};
+
 class Planta {
     std::string numePlanta;
     std::string categorie; //Leguma, Fruct, Floare
@@ -83,6 +108,21 @@ public:
 class Hambar {
     std::map<std::string, int> inventar;
 public:
+    int vanzare(const std::string& numePlanta, int cantitate) {
+        if (inventar.find(numePlanta) != inventar.end() && inventar[numePlanta] >= cantitate) {
+            inventar[numePlanta] -= cantitate;
+            if (inventar[numePlanta] == 0)
+                inventar.erase(numePlanta);
+
+            int pretBucata = 10;
+            if (numePlanta == "Rosie") pretBucata = 25;
+            if (numePlanta == "Lalea") pretBucata = 15;
+
+            return pretBucata * cantitate;
+        }
+        return 0;
+    }
+
     void adaugaRecolta(const std::string& numePlanta) { inventar[numePlanta]++; }
     friend std::ostream& operator<<(std::ostream& os, const Hambar &h) {
         //os  << "\n";
@@ -100,9 +140,10 @@ class Ferma {
 
     std::string numeFerma;
     Hambar hambar;
+    Portofel portofel;
     int ziuaCurenta;
     int numarParcele;
-    Parcela* parcele; //pointer catre heap
+    Parcela* parcele = nullptr; //pointer catre heap
 
 public:
     //Ferma() {}
@@ -116,6 +157,7 @@ public:
     Ferma(const Ferma& other) : //constructor de copiere, salvarea progresului pentru a putea reseta greseli
     numeFerma(other.numeFerma),
     hambar(other.hambar),
+    portofel(other.portofel),
     ziuaCurenta(other.ziuaCurenta),
     numarParcele(other.numarParcele) {
         if (other.numarParcele > 0 && other.parcele != nullptr) { //daca ferma copiata are macar o parcela
@@ -134,14 +176,29 @@ public:
             std::cout << "Dimensiune interzisa! Trebuie sa adaugi cel putin o parcela!";
             return;
         }
+        int costTotal = parceleAdaugate * 50;
+        if (!portofel.cheltuie(costTotal)) {
+            std::cout << "Fonduri insuficiente pentru extindere!\n" << "Mai ai nevoie de " << portofel.getBani() << " Monede!\n";
+            return;
+        }
+        //portofel.cheltuie(costTotal);
         int capacitateNoua = this->numarParcele + parceleAdaugate; //parcelele initiale plus parcelele pe care vrem sa le adaugam
         auto *parceleNoi = new Parcela[capacitateNoua]; //aloc un nou bloc de memorie avand noua capacitate
         if (parcele != nullptr)
             std::move(parcele, parcele+numarParcele, parceleNoi);
-        delete[] parcele; //dezaloc vechia memorie unde erau puse parcelele
+        delete[] parcele; //dezaloc vechea memorie unde erau puse parcelele
         parcele = parceleNoi;
         numarParcele = capacitateNoua;
         std::cout << "Ferma a fost extinsa cu succes! Numar curent de parcele: " << numarParcele << "\n";
+    }
+
+    void vinde(const std::string& numeProdus, int cantitate) {
+        int baniPrimiti = hambar.vanzare(numeProdus, cantitate);
+        if (baniPrimiti > 0) {
+            portofel.adaugaBani(baniPrimiti);
+            std::cout << "Ai vandut " << cantitate << " " << numeProdus << "\n";
+        }
+        else std::cout << "Nu ai suficiente " << numeProdus << "!\n";
     }
 
     void planteaza(int index, const Planta& p) {
@@ -203,6 +260,7 @@ public:
         delete[] parcele;
         numeFerma = other.numeFerma;
         hambar = other.hambar;
+        portofel = other.portofel;
         ziuaCurenta = other.ziuaCurenta;
         numarParcele = other.numarParcele;
         if (other.numarParcele > 0 && other.parcele != nullptr) {
@@ -217,6 +275,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream &os, const Ferma &f) {
         os << "Ferma: " << f.numeFerma << "\n";
+        os << "Portofel " << f.portofel << "\n";
         os << "Ziua curenta: " << f.ziuaCurenta << "\n";
         os << "Hambar: " << f.hambar << "\n";
         os << "TEREN: " << f.numarParcele << " parcele\n";
@@ -253,6 +312,8 @@ int main() {
 
     fermaMea.recolteaza(0);
     fermaMea.recolteaza(1);
+
+    fermaMea.vinde("Rosie", 1);
 
     std::cout << "Ai pierdut laleaua, asa ca dam Load Game la Ziua 1!\n";
     fermaMea = salvareZiua1;

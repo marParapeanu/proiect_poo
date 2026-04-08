@@ -29,6 +29,40 @@ public:
     }
 };
 
+class Magazin {
+    std::map<std::string, int> preturiCumparare; //cat ma costa sa cumar seminte, animale, etc
+    std::map<std::string, int> preturiVanzare; //cat primesc cand vand un produs
+public:
+    Magazin() {
+        preturiCumparare["Rosie"] = 10;
+        preturiCumparare["Lalea"] = 5;
+
+        preturiVanzare["Rosie"] = 20;
+        preturiVanzare["Lalea"] = 15;
+    }
+
+    [[nodiscard]] int getPretCumparare(const std::string& produs) const {
+        if (preturiCumparare.find(produs) != preturiCumparare.end())
+            return preturiCumparare.at(produs);
+        return 0;
+    }
+
+    [[nodiscard]] int getPretVanzare(const std::string& produs) const {
+        if (preturiVanzare.find(produs) != preturiVanzare.end())
+            return preturiVanzare.at(produs);
+        return 0;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Magazin& m) {
+        os << "CATALOG MAGAZIN: \n";
+        os << "Cumpara seminte: \n";
+        for (const auto& p : m.preturiCumparare) os << " - " << p.first << ": " << p.second << " monede\n";
+        os << "Vinde recolta: \n";
+        for (const auto& p : m.preturiVanzare) os << " - " << p.first << ": " << p.second << " monede\n";
+        return os;
+    }
+};
+
 class Planta {
     std::string numePlanta;
     std::string categorie; //Leguma, Fruct, Floare
@@ -108,19 +142,13 @@ public:
 class Hambar {
     std::map<std::string, int> inventar;
 public:
-    int vanzare(const std::string& numePlanta, int cantitate) {
-        if (inventar.find(numePlanta) != inventar.end() && inventar[numePlanta] >= cantitate) {
-            inventar[numePlanta] -= cantitate;
-            if (inventar[numePlanta] == 0)
-                inventar.erase(numePlanta);
-
-            int pretBucata = 10;
-            if (numePlanta == "Rosie") pretBucata = 25;
-            if (numePlanta == "Lalea") pretBucata = 15;
-
-            return pretBucata * cantitate;
+    bool extrageDinHambar(const std::string& numeProdus, int cantitate) {
+        if (inventar.find(numeProdus) != inventar.end() && inventar[numeProdus] >= cantitate) {
+            inventar[numeProdus] -= cantitate;
+            if (inventar[numeProdus] == 0) inventar.erase(numeProdus);
+            return true;
         }
-        return 0;
+        return false;
     }
 
     void adaugaRecolta(const std::string& numePlanta) { inventar[numePlanta]++; }
@@ -141,6 +169,7 @@ class Ferma {
     std::string numeFerma;
     Hambar hambar;
     Portofel portofel;
+    Magazin magazin;
     int ziuaCurenta;
     int numarParcele;
     Parcela* parcele = nullptr; //pointer catre heap
@@ -158,6 +187,7 @@ public:
     numeFerma(other.numeFerma),
     hambar(other.hambar),
     portofel(other.portofel),
+    magazin(other.magazin),
     ziuaCurenta(other.ziuaCurenta),
     numarParcele(other.numarParcele) {
         if (other.numarParcele > 0 && other.parcele != nullptr) { //daca ferma copiata are macar o parcela
@@ -193,12 +223,15 @@ public:
     }
 
     void vinde(const std::string& numeProdus, int cantitate) {
-        int baniPrimiti = hambar.vanzare(numeProdus, cantitate);
-        if (baniPrimiti > 0) {
-            portofel.adaugaBani(baniPrimiti);
-            std::cout << "Ai vandut " << cantitate << " " << numeProdus << "\n";
+        int pretBucata = magazin.getPretVanzare(numeProdus);
+
+        if (hambar.extrageDinHambar(numeProdus, cantitate)) {
+            int baniPrimiti = pretBucata * cantitate;
+            portofel.adaugaBani((baniPrimiti));
+            std::cout << "[Magazin] Ai vandut " << cantitate << " " << numeProdus << "\n";
         }
-        else std::cout << "Nu ai suficiente " << numeProdus << "!\n";
+        else std::cout << "[Hambar] Nu ai suficiente " << numeProdus << "\n";
+
     }
 
     void planteaza(int index, const Planta& p) {
@@ -261,6 +294,7 @@ public:
         numeFerma = other.numeFerma;
         hambar = other.hambar;
         portofel = other.portofel;
+        magazin = other.magazin;
         ziuaCurenta = other.ziuaCurenta;
         numarParcele = other.numarParcele;
         if (other.numarParcele > 0 && other.parcele != nullptr) {

@@ -3,6 +3,19 @@
 # Descriere:
 Simularea unui joc tip ferma (asemanator cu HayDay sau Stardew Valley) in consola. Jucatorul isi poate construi si dezovolta propria ferma, avand la dispozitie posibilitati precum plantare, recoltare si depozitare in hambar, extindere de ferma, dar si ingrijirea unor animale care vor produce la randul lor bunuri.
 
+Pornesti la drum cu un mic teren agricol si 100 de monede in buzunar. Ce decizii vei lua pentru a-ti dezvolta ferma?
+Iata principalele actiuni pe care le vei putea face:
+
+->Cultiva si ingrijeste: Ai posibilitatea de a cumpara seminte variate, cum ar fi rosii sau lalele, pe care sa le plantezi pe parcelele tale. Dar munca nu se termina aici. Plantele au nevoie de apa în fiecare zi. O zi sarita inseamna o planta ofilita si o investitie pierduta.
+
+->Gestioneaza timpul: La fel ca in realitate, timpul trece. Prin mecanica de avansare a zilelor, vei observa cum plantele tale cresc si se apropie de maturitate, atata timp cat sunt udate corespunzator.
+
+->Comert: Magazinul este locul de unde poti cumpara seminte, animale. Aceste vor produce bunuri, pe care le vei putea vinde la randul lor la magazin pentru a obtine profit.
+
+->Dezvolta-ti ferma: Poti folosi monedele castigate pentru a extinde capacitatea fermei tale, achizitionand parcele noi de pamant. Mai mult pamant inseamna o productie mai mare.
+
+->Calatoreste in timp (Save/Load): Pentru momentele în care uiti, de exmplu, sa uzi o planta, jocul include un sistem prin care iti poti salva progresul si te poti intoarce la ziua anterioara pentru a corecta greselile.
+
 // Nu stiu inca daca voi implementa si interfata grafica! 
 
 ### Folosiți template-ul corespunzător grupei voastre!

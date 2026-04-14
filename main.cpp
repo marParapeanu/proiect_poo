@@ -211,14 +211,23 @@ public:
             std::cout << "Fonduri insuficiente pentru extindere!\n" << "Mai ai nevoie de " << portofel.getBani() << " Monede!\n";
             return;
         }
-        //portofel.cheltuie(costTotal);
+
         int capacitateNoua = this->numarParcele + parceleAdaugate; //parcelele initiale plus parcelele pe care vrem sa le adaugam
         auto *parceleNoi = new Parcela[capacitateNoua]; //aloc un nou bloc de memorie avand noua capacitate
-        if (parcele != nullptr)
-            std::move(parcele, parcele+numarParcele, parceleNoi);
-        delete[] parcele; //dezaloc vechea memorie unde erau puse parcelele
-        parcele = parceleNoi;
+
+        if (parcele != nullptr && numarParcele>0) {
+            std::copy_n(parcele, numarParcele, parceleNoi);
+        }
+
+        std::swap(parcele, parceleNoi);
+        delete[] parceleNoi;
         numarParcele = capacitateNoua;
+
+        // if (parcele != nullptr)
+        //     std::move(parcele, parcele+numarParcele, parceleNoi);
+        // delete[] parcele; //dezaloc vechea memorie unde erau puse parcelele
+        // parcele = parceleNoi;
+        // numarParcele = capacitateNoua;
         std::cout << "Ferma a fost extinsa cu succes! Numar curent de parcele: " << numarParcele << "\n";
     }
 
@@ -240,14 +249,21 @@ public:
             std::cout << "Parcela cu numarul " << index << " este ocupata!\n";
             return;
         }
+
         std::string cat = p.getCategorie();
-        if (cat == "Leguma" || cat == "Fruct" || cat == "Floare") {
-            parcele[index].planteaza(p);
-            std::cout << "Ai plantat " << p.getNume() << " pe parcela cu numarul " << index << "\n";
+        if (cat != "Leguma" && cat != "Fruct" && cat != "Floare") {
+            std::cout << "EROARE: '" << p.getNume() << "' nu este o planta valida!\n";
+            return;
         }
-        else {
-            std::cout << "EROARE " << p.getNume() << " nu este o planta valida!\n";
+        int pret = magazin.getPretCumparare(p.getNume());
+        if (portofel.getBani() < pret) {
+            std::cout << "Bani insuficienti! Mai ai nevoie de " << pret - portofel.getBani() << " monede!";
+            return;
         }
+        portofel.cheltuie(pret);
+        parcele[index].planteaza(p);
+        std::cout << "Ai plantat " << p.getNume() << " pe parcela " << "index" << "\n";
+
     }
 
     void udaParcela(int index) {
@@ -291,6 +307,7 @@ public:
         }
 
         delete[] parcele;
+        parcele = nullptr;
         numeFerma = other.numeFerma;
         hambar = other.hambar;
         portofel = other.portofel;
@@ -313,8 +330,8 @@ public:
         os << "Ziua curenta: " << f.ziuaCurenta << "\n";
         os << "Hambar: " << f.hambar << "\n";
         os << "TEREN: " << f.numarParcele << " parcele\n";
-        for (int i = 0; i < f.numarParcele; i++)
-            if (f.parcele != nullptr)
+        if (f.parcele != nullptr && f.numarParcele > 0)
+            for (int i = 0; i < f.numarParcele; i++)
                 os << "Parcela " << i << " -> " << f.parcele[i] << "\n"; //apeleaza operatorul din Parcela
         return os;
     }

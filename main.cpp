@@ -63,6 +63,44 @@ public:
     }
 };
 
+class Animal {
+    std::string numeAnimal;
+    std::string specie;
+    int varsta;
+    bool esteHranit;
+    bool traieste;
+public:
+    Animal(std::string  nume, std::string  specieA) : numeAnimal(std::move(nume)), specie(std::move(specieA)), varsta(0), esteHranit(false), traieste(true) {}
+    [[nodiscard]] std::string getNume() const {return numeAnimal;}
+    [[nodiscard]] std::string getSpecie() const {return specie;}
+    //[[nodiscard]] bool isAlive() const { return traieste;}
+
+    void hraneste() {
+        if (traieste) esteHranit = true;
+    }
+
+    void cresteZi() {
+        if (!traieste) return;
+        if (esteHranit) {
+            varsta++;
+            esteHranit= false;
+        }
+        else traieste = false;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Animal& a) {
+        if (!a.traieste) {
+            os << " [ DECEDAT ]" << a.specie << " (a.nume) " << "a murit\n";
+        }
+        else {
+            os << " a.specie:  " << a.numeAnimal << " | Varsta: " << a.varsta << " zile | " << (a.esteHranit ? " [ ESTE HRANIT ]" : " [ FOAME ] -> trebuie hranit!") << "\n";
+        }
+        return os;
+    }
+
+
+};
+
 class Planta {
     std::string numePlanta;
     std::string categorie; //Leguma, Fruct, Floare
@@ -173,6 +211,7 @@ class Ferma {
     int ziuaCurenta;
     int numarParcele;
     Parcela* parcele = nullptr; //pointer catre heap
+    std::vector<Animal> animale;
 
 public:
     //Ferma() {}
@@ -208,7 +247,7 @@ public:
         }
         int costTotal = parceleAdaugate * 50;
         if (!portofel.cheltuie(costTotal)) {
-            std::cout << "Fonduri insuficiente pentru extindere!\n" << "Mai ai nevoie de " << portofel.getBani() << " Monede!\n";
+            std::cout << "Fonduri insuficiente pentru extindere!\n" << "Mai ai nevoie de " << costTotal - portofel.getBani() << " Monede!\n";
             return;
         }
 
@@ -229,6 +268,18 @@ public:
         // parcele = parceleNoi;
         // numarParcele = capacitateNoua;
         std::cout << "Ferma a fost extinsa cu succes! Numar curent de parcele: " << numarParcele << "\n";
+    }
+
+    void adaugaAnimal(const Animal& a) {
+        animale.push_back(a);
+        std::cout << "Animal nou adaugat: " << a.getNume() << " ( " << a.getSpecie() << " )\n";
+    }
+
+    void hranesteAnimale() {
+        for (auto& animal : animale) {
+            animal.hraneste();
+        }
+        std::cout << "Toate animalele au fost hranite!\n";
     }
 
     void vinde(const std::string& numeProdus, int cantitate) {
@@ -299,6 +350,10 @@ public:
                 parcele[i].treciZiua();
             }
         }
+
+        for (auto& animal : animale) {
+            animal.cresteZi();
+        }
     }
 
     Ferma& operator=(const Ferma& other) {
@@ -333,6 +388,16 @@ public:
         if (f.parcele != nullptr && f.numarParcele > 0)
             for (int i = 0; i < f.numarParcele; i++)
                 os << "Parcela " << i << " -> " << f.parcele[i] << "\n"; //apeleaza operatorul din Parcela
+        os << "ANIMALE:\n";
+        if (f.animale.empty()) {
+            os << " Nu exista animale in ferma\n";
+        }
+        else {
+            for (const auto& animal : f.animale) {
+                os << " " << animal << "\n";
+            }
+        }
+
         return os;
     }
 };
@@ -349,9 +414,13 @@ int main() {
     Planta lalea("Lalea", "Floare", 2);
     Planta gaina("Gaina", "Animal", 5);
 
+    Animal vaca("Vivi", "vaca");
+
     fermaMea.planteaza(0, rosie);
     fermaMea.planteaza(1, lalea);
     fermaMea.planteaza(2, gaina);
+    fermaMea.adaugaAnimal(vaca);
+    fermaMea.hranesteAnimale();
 
     fermaMea.udaParcela(0);
     fermaMea.udaParcela(1);

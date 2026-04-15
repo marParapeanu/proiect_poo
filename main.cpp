@@ -71,8 +71,8 @@ class Animal {
     bool traieste;
 public:
     Animal(std::string  nume, std::string  specieA) : numeAnimal(std::move(nume)), specie(std::move(specieA)), varsta(0), esteHranit(false), traieste(true) {}
-    [[nodiscard]] std::string getNume() const {return numeAnimal;}
-    [[nodiscard]] std::string getSpecie() const {return specie;}
+    [[nodiscard]] const std::string& getNume() const {return numeAnimal;}
+    [[nodiscard]] const std::string& getSpecie() const {return specie;}
     //[[nodiscard]] bool isAlive() const { return traieste;}
 
     void hraneste() {

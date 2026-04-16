@@ -37,6 +37,9 @@ public:
     Magazin() {
         preturiCumparare["Rosie"] = 10;
         preturiCumparare["Lalea"] = 5;
+        preturiCumparare["Vaca"] = 50;
+        preturiCumparare["Porc"] = 80;
+        preturiCumparare["Gaina"] = 20;
 
         preturiVanzare["Rosie"] = 20;
         preturiVanzare["Lalea"] = 15;
@@ -91,10 +94,10 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Animal& a) {
         if (!a.traieste) {
-            os << " [ DECEDAT ]" << a.specie << " (a.nume) " << "a murit\n";
+            os << " [ DECEDAT ]" << a.specie << a.numeAnimal << "a murit\n";
         }
         else {
-            os << " a.specie:  " << a.numeAnimal << " | Varsta: " << a.varsta << " zile | " << (a.esteHranit ? " [ ESTE HRANIT ]" : " [ FOAME ] -> trebuie hranit!") << "\n";
+            os <<  a.specie << " " << a.numeAnimal << " | Varsta: " << a.varsta << " zile | " << (a.esteHranit ? " [ ESTE HRANIT ]" : " [ FOAME ] -> trebuie hranit!") << "\n";
         }
         return os;
     }
@@ -280,6 +283,7 @@ public:
         portofel.cheltuie(pret);
         animale.push_back(a);
         std::cout << "Animal nou adaugat: " << a.getNume() << " ( " << a.getSpecie() << " )\n";
+
     }
 
     void hranesteAnimale() {

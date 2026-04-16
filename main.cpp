@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <map>
+#include <limits>
 
 class Portofel {
     int bani;
@@ -271,6 +272,12 @@ public:
     }
 
     void adaugaAnimal(const Animal& a) {
+        int pret = magazin.getPretCumparare(a.getSpecie());
+        if (portofel.getBani() < pret) {
+            std::cout << "Bani insuficienti! Mai ai nevoie de " << pret - portofel.getBani() << " monede!\n";
+            return;
+        }
+        portofel.cheltuie(pret);
         animale.push_back(a);
         std::cout << "Animal nou adaugat: " << a.getNume() << " ( " << a.getSpecie() << " )\n";
     }
@@ -313,7 +320,7 @@ public:
         }
         portofel.cheltuie(pret);
         parcele[index].planteaza(p);
-        std::cout << "Ai plantat " << p.getNume() << " pe parcela " << "index" << "\n";
+        std::cout << "Ai plantat " << p.getNume() << " pe parcela " << index+1 << "\n";
 
     }
 
@@ -387,7 +394,7 @@ public:
         os << "TEREN: " << f.numarParcele << " parcele\n";
         if (f.parcele != nullptr && f.numarParcele > 0)
             for (int i = 0; i < f.numarParcele; i++)
-                os << "Parcela " << i << " -> " << f.parcele[i] << "\n"; //apeleaza operatorul din Parcela
+                os << "Parcela " << i+1 << " -> " << f.parcele[i] << "\n"; //apeleaza operatorul din Parcela
         os << "ANIMALE:\n";
         if (f.animale.empty()) {
             os << " Nu exista animale in ferma\n";
@@ -402,82 +409,225 @@ public:
     }
 };
 
+class Joc {
+    Ferma* ferma;
+    Ferma* salvare;
+    bool ruleaza;
+    static void titlu(const std::string& text) {
+        std::cout << " " << text << "\n";
+    }
+    static void invalid() {std::cout << "Optiune invalida!\n";}
+    static int citesteInt(const std::string& mesaj) {
+        int val;
+        std::cout << mesaj;
+        while (!(std::cin >> val)) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Input invalid! \n" << mesaj;
+        }
+        return val;
+    }
+
+    void meniuTeren() {
+        titlu("GESTIUNE TEREN");
+        std::cout << "1. Planteaza\n" << "2. Uda o parcela\n" << "3. Recolteaza\n" << "0. Inapoi\n";
+        int opt = citesteInt("> ");
+        switch (opt) {
+            case 1: {
+                int index = citesteInt("Index parcela: ");
+                titlu("SELECTEAZA PLANTA: ");
+                std::cout << "1. Rosie (cost: 10 monede, maturitate 5 zile) \n"
+                          << "2. Lalea (cost: 5 monede, maturitate 3 zile) \n";
+                int alegere = citesteInt("> ");
+                if (alegere == 1)
+                    ferma->planteaza(index, Planta("Rosie", "Leguma", 5));
+                else if (alegere == 2)
+                    ferma->planteaza(index, Planta("Lalea", "Floare", 2));
+                else invalid();
+                break;
+            }
+
+            case 2: {
+                int index = citesteInt("Index parcela: ");
+                ferma->udaParcela(index);
+                break;
+            }
+
+            case 3: {
+                int index = citesteInt("Index parcela: ");
+                ferma->recolteaza(index);
+                break;
+            }
+
+            case 0: break;
+
+            default: invalid();
+        }
+    }
+
+    void meniuAnimale() {
+        titlu("GESTIUNE ANIMALE");
+        std::cout << "1. Cumpara animal\n" << "2. Hraneste toate animalele\n" << "0. Inapoi\n";
+        int opt = citesteInt("> ");
+        switch (opt) {
+            case 1: {
+                titlu("SELECTEAZA ANIMAL");
+                std::cout << "1. Vaca  (cost: 50 monede)\n"
+                          << "2. Gaina (cost: 20 monede)\n"
+                          << "3. Porc (cost: 80 monede)\n";
+                int alegere = citesteInt("> ");
+                std::string numeAnimal;
+                std::cout << "Numele animalului: ";
+                std::cin >> numeAnimal;
+                if (alegere == 1)
+                    ferma->adaugaAnimal(Animal(numeAnimal, "Vaca"));
+                else if (alegere == 2)
+                    ferma->adaugaAnimal(Animal(numeAnimal, "Gaina"));
+                else if (alegere == 3)
+                    ferma->adaugaAnimal(Animal(numeAnimal, "Porc"));
+                else invalid();
+                break;
+            }
+
+            case 2: {
+                ferma->hranesteAnimale();
+                break;
+            }
+
+            case 0: break;
+            default: invalid();
+        }
+    }
+
+    void meniuMagazin() {
+        titlu("MAGAZIN - VANZARE RECOLTA");
+        std::cout << "1. Vinde Rosii\n"
+                  << "2. Vinde Lalele\n"
+                  << "0. Inapoi\n";
+        int opt = citesteInt("> ");
+        std::string produs;
+        if (opt == 1) produs = "Rosie";
+        else if (opt == 2) produs = "Lalea";
+        else return;
+        int cantitate = citesteInt("Cantitate: ");
+        ferma->vinde(produs, cantitate);
+    }
+
+    void meniuFerma() {
+        titlu("GESTIONARE FERMA");
+        std::cout << "1. Extinde ferma\n"
+                  << "2. Salveaza progresul\n"
+                  << "3. Incarca salvare\n"
+                  << "0. Inapoi\n";
+        int opt = citesteInt("> ");
+        switch (opt) {
+            case 1: {
+                int nrParcele = citesteInt("Cate parcele vrei sa adaugi? (cost: 50/parcela): ");
+                ferma->extindeFerma(nrParcele);
+                break;
+            }
+            case 2:
+                delete salvare;
+                salvare = new Ferma(*ferma);
+                std::cout << "Progres salvat!\n";
+                break;
+            case 3:
+                if (salvare == nullptr) {
+                    std::cout << "Nu exista nicio salvare!\n";
+                } else {
+                    *ferma = *salvare;
+                    std::cout << "Salvare incarcata cu succes!\n";
+                }
+                break;
+            case 0: break;
+            default: std::cout << "Optiune invalida.\n";
+        }
+    }
+
+public:
+    explicit Joc(const std::string& numeFerma, int nrParcele)
+    : ferma(new Ferma(numeFerma, nrParcele)),
+    salvare(nullptr),
+    ruleaza(true) {}
+
+    ~Joc() {
+        delete ferma;
+        delete salvare;
+    }
+
+    Joc(const Joc&) = delete;
+    Joc& operator=(const Joc&) = delete;
+    void ruleazaJocul() {
+        while (ruleaza) {
+            titlu("MENIU PRINCIPAL");
+            std::cout << "1. Vezi status ferma\n"
+                      << "2. Gestioneaza teren\n"
+                      << "3. Gestioneaza animale\n"
+                      << "4. Magazin (vinde recolta)\n"
+                      << "5. Treci la ziua urmatoare\n"
+                      << "6. Gestioneaza ferma (save/load/extinde)\n"
+                      << "0. Iesi din joc\n";
+            int opt = citesteInt("> ");
+            switch (opt) {
+                case 1: std::cout << *ferma; break;
+                case 2: meniuTeren();         break;
+                case 3: meniuAnimale();       break;
+                case 4: meniuMagazin();       break;
+                case 5: ferma->ziuaUrmatoare(); break;
+                case 6: meniuFerma();         break;
+                case 0: ruleaza = false;
+                    std::cout << "La revedere! Multumim ca ai jucat!\n";
+                    break;
+                default: std::cout << "Optiune invalida.\n";
+            }
+        }
+    }
+};
+
 
 int main() {
 
     std::string numeFerma;
-    std::cout << "Introdu numele fermei tale!: ";
+    std::cout << "Introdu numele fermei tale! \n";
     std::cin >> numeFerma;
-    Ferma fermaMea(numeFerma, 3);
-
-    Planta rosie("Rosie", "Leguma", 2);
-    Planta lalea("Lalea", "Floare", 2);
-    Planta gaina("Gaina", "Animal", 5);
-
-    Animal vaca("Vivi", "vaca");
-
-    fermaMea.planteaza(0, rosie);
-    fermaMea.planteaza(1, lalea);
-    fermaMea.planteaza(2, gaina);
-    fermaMea.adaugaAnimal(vaca);
-    fermaMea.hranesteAnimale();
-
-    fermaMea.udaParcela(0);
-    fermaMea.udaParcela(1);
-    fermaMea.ziuaUrmatoare();
-    Ferma salvareZiua1 = fermaMea;
-
-    fermaMea.udaParcela(0);
-    fermaMea.ziuaUrmatoare();
-
-    fermaMea.recolteaza(0);
-    fermaMea.recolteaza(1);
-
-    fermaMea.vinde("Rosie", 1);
-
-    std::cout << "Ai pierdut laleaua, asa ca dam Load Game la Ziua 1!\n";
-    fermaMea = salvareZiua1;
-    fermaMea.extindeFerma(2);
-    std::cout << "\n[ Starea Finala ]\n" << fermaMea;
+    Joc joc(numeFerma, 3);
+    joc.ruleazaJocul();
     return 0;
 
     // std::string numeFerma;
     // std::cout << "Introdu numele fermei tale!: ";
-    // std::cin  >> numeFerma;
-    // Ferma fermaMea(numeFerma, 5);
-    // Planta rosie("Rosie", "Leguma", 3);
+    // std::cin >> numeFerma;
+    // Ferma fermaMea(numeFerma, 3);
+    //
+    // Planta rosie("Rosie", "Leguma", 2);
     // Planta lalea("Lalea", "Floare", 2);
+    // Planta gaina("Gaina", "Animal", 5);
+    //
+    // Animal vaca("Vivi", "vaca");
+    //
     // fermaMea.planteaza(0, rosie);
     // fermaMea.planteaza(1, lalea);
-    // fermaMea.planteaza(2, rosie);
-    // fermaMea.planteaza(3, rosie);
-    // fermaMea.planteaza(4, lalea);
-    // fermaMea.planteaza(5,lalea);
-    // fermaMea.extindeFerma(1);
-    // std::cout << fermaMea;
-
-
-        // Ferma fermaMea("Mar", 3);
-        // Planta rosie("Rosie", "Leguma", 2); // creste în 2 zile
-        //
-        // fermaMea.planteaza(0, rosie);
-        // // Ziua 1
-        // fermaMea.udaParcela(0);
-        // fermaMea.ziuaUrmatoare();
-        // fermaMea.extindeFerma(3);
-        //
-        // // Ziua 2 - Ajunge la maturitate!
-        // fermaMea.udaParcela(0);
-        // fermaMea.ziuaUrmatoare();
-        // std::cout << "\n[Inainte de recoltare manuala]\n" << fermaMea;
-        // fermaMea.recolteaza(0);
-        //
-        // // Afisam din nou ca sa vedem ca Parcela 0 s-a golit si Hambarul s-a umplut
-        // std::cout << "\n[Dupa recoltare manuala]\n" << fermaMea;
-        //
-        // return 0;
-
-
+    // fermaMea.planteaza(2, gaina);
+    // fermaMea.adaugaAnimal(vaca);
+    // fermaMea.hranesteAnimale();
+    //
+    // fermaMea.udaParcela(0);
+    // fermaMea.udaParcela(1);
+    // fermaMea.ziuaUrmatoare();
+    // Ferma salvareZiua1 = fermaMea;
+    //
+    // fermaMea.udaParcela(0);
+    // fermaMea.ziuaUrmatoare();
+    //
+    // fermaMea.recolteaza(0);
+    // fermaMea.recolteaza(1);
+    //
+    // fermaMea.vinde("Rosie", 1);
+    //
+    // std::cout << "Ai pierdut laleaua, asa ca dam Load Game la Ziua 1!\n";
+    // fermaMea = salvareZiua1;
+    // fermaMea.extindeFerma(2);
+    // std::cout << "\n[ Starea Finala ]\n" << fermaMea;
 
 
     //std::array<int, 100> v{};

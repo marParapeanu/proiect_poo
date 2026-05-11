@@ -3,6 +3,10 @@
 //
 
 #include "Joc.h"
+#include "Gaina.h"
+#include "Vaca.h"
+#include "Porc.h"
+#include "Oaie.h"
 #include <limits>
 
 void Joc::titlu(const std::string &text) {
@@ -74,11 +78,13 @@ void Joc::meniuAnimale() {
             std::cout << "Numele animalului: ";
             std::cin >> numeAnimal;
             if (alegere == 1)
-                ferma->adaugaAnimal(Animal(numeAnimal, "Vaca"));
+                ferma->adaugaAnimal(std::make_unique<Vaca>(numeAnimal));
             else if (alegere == 2)
-                ferma->adaugaAnimal(Animal(numeAnimal, "Gaina"));
+                ferma->adaugaAnimal(std::make_unique<Gaina>(numeAnimal));
             else if (alegere == 3)
-                ferma->adaugaAnimal(Animal(numeAnimal, "Porc"));
+                ferma->adaugaAnimal(std::make_unique<Porc>(numeAnimal));
+            else if (alegere == 4)
+                ferma->adaugaAnimal(std::make_unique<Oaie>(numeAnimal));
             else invalid();
             break;
         }

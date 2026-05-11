@@ -11,6 +11,7 @@
 #include "Magazin.h"
 #include "Animal.h"
 #include <vector>
+#include <memory>
 
 class Ferma {
 
@@ -21,7 +22,7 @@ class Ferma {
     int ziuaCurenta;
     int numarParcele;
     Parcela* parcele = nullptr; //pointer catre heap
-    std::vector<Animal> animale;
+    std::vector<std::unique_ptr<Animal>> animale;
 
 public:
     explicit Ferma(std::string  nume, int nrParcele, const std::string& caleMagazin = "assets/magazin.txt");
@@ -34,7 +35,7 @@ public:
 
     void extindeFerma(int parceleAdaugate);
 
-    void adaugaAnimal(const Animal& a);
+    void adaugaAnimal(std::unique_ptr<Animal> a);
 
     void hranesteAnimale();
 

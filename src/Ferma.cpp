@@ -28,6 +28,9 @@ Ferma::Ferma(const Ferma &other): //constructor de copiere, salvarea progresului
             parcele[i] = other.parcele[i];
     }
     else parcele = nullptr;
+
+    for (const auto& a : other.animale)
+        animale.push_back(a->clone());
     std::cout << "Progresul fermei " << other.numeFerma << " a fost salvat! " << "Nume copie: " << numeFerma << "\n";
 }
 
@@ -65,21 +68,20 @@ void Ferma::extindeFerma(int parceleAdaugate) {
     std::cout << "Ferma a fost extinsa cu succes! Numar curent de parcele: " << numarParcele << "\n";
 }
 
-void Ferma::adaugaAnimal(const Animal &a) {
-    int pret = magazin.getPretCumparare(a.getSpecie());
+void Ferma::adaugaAnimal(std::unique_ptr<Animal> a) {
+    int pret = magazin.getPretCumparare(a->getNume());
     if (portofel.getBani() < pret) {
-        std::cout << "Bani insuficienti! Mai ai nevoie de " << pret - portofel.getBani() << " monede!\n";
+        std::cout << "Bani insuficienti!\n";
         return;
     }
     portofel.cheltuie(pret);
-    animale.push_back(a);
-    std::cout << "Animal nou adaugat: " << a.getNume() << " ( " << a.getSpecie() << " )\n";
-
+    std::cout << "Animal nou adaugat: " << a->getNume() << "\n";
+    animale.push_back(std::move(a));
 }
 
 void Ferma::hranesteAnimale() {
     for (auto& animal : animale) {
-        animal.hraneste();
+        animal->hraneste();
     }
     std::cout << "Toate animalele au fost hranite!\n";
 }
@@ -154,8 +156,15 @@ void Ferma::ziuaUrmatoare() {
     }
 
     for (auto& animal : animale) {
-        animal.cresteZi();
+        animal->cresteZi();
     }
+
+    animale.erase(
+    std::remove_if(animale.begin(), animale.end(),
+        [](const std::unique_ptr<Animal>& a) { return !a->esteViu(); }),
+    animale.end()
+);
+
 }
 
 Ferma & Ferma::operator=(const Ferma &other) {
@@ -177,6 +186,9 @@ Ferma & Ferma::operator=(const Ferma &other) {
             parcele[i] = other.parcele[i];
     }
     else parcele = nullptr;
+    animale.clear();
+    for (const auto& a : other.animale)
+        animale.push_back(a->clone());
     std::cout << "Ferma a fost suprascrisa! (Load Game reusit)\n";
     return *this;
 }
@@ -196,7 +208,7 @@ std::ostream & operator<<(std::ostream &os, const Ferma &f) {
     }
     else {
         for (const auto& animal : f.animale) {
-            os << " " << animal << "\n";
+            os << " " << *animal << "\n";
         }
     }
 

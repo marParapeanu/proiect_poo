@@ -20,7 +20,7 @@ bool Portofel::cheltuie(int suma) {
             return true;
         }
     }
-    std::cout << "Fonduri insuficiente!\n";
+    //std::cout << "Fonduri insuficiente!\n";
     return false;
 }
 

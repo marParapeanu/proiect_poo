@@ -67,6 +67,14 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         include/Ferma.h
         src/Joc.cpp
         include/Joc.h
+        include/Gaina.h
+        src/Gaina.cpp
+        include/Vaca.h
+        src/Vaca.cpp
+        include/Porc.h
+        src/Porc.cpp
+        include/Oaie.h
+        src/Oaie.cpp
 )
 target_sources(${MAIN_EXECUTABLE_NAME}
     PRIVATE

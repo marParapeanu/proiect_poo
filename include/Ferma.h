@@ -24,12 +24,13 @@ class Ferma {
     std::vector<Animal> animale;
 
 public:
-    //Ferma() {}
-    explicit Ferma(std::string  nume, int nrParcele);
+    explicit Ferma(std::string  nume, int nrParcele, const std::string& caleMagazin = "assets/magazin.txt");
 
     Ferma(const Ferma& other);
 
     ~Ferma();
+
+    [[nodiscard]] const Magazin& getMagazin() const;
 
     void extindeFerma(int parceleAdaugate);
 

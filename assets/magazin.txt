@@ -1,0 +1,11 @@
+# FORMAT: tip,nume,pretCumparare,pretVanzare (0 = nu se vinde)
+seminta,Rosie,10,20
+seminta,Lalea,5,15
+animal,Gaina,20,0
+animal,Vaca,50,0
+animal,Porc,80,0
+animal,Oaie,60,0
+produs,Ou,0,8
+produs,Lapte,0,25
+produs,Slanina,0,30
+produs,Lana,0,18

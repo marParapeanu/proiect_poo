@@ -6,8 +6,8 @@
 #include <algorithm>
 
 
-Ferma::Ferma(std::string nume, int nrParcele):
-    numeFerma(std::move(nume)), ziuaCurenta(0), numarParcele(nrParcele) {
+Ferma::Ferma(std::string nume, int nrParcele, const std::string& caleMagazin):
+    numeFerma(std::move(nume)), magazin(caleMagazin), ziuaCurenta(0), numarParcele(nrParcele) {
     parcele = new Parcela[numarParcele]; //parcele = pointer catre primul element din array
     std::cout << "Bine ai venit la ferma: " << numeFerma << "!\n";
     std::cout << "Ziua " << ziuaCurenta << "\n";
@@ -32,6 +32,8 @@ Ferma::Ferma(const Ferma &other): //constructor de copiere, salvarea progresului
 }
 
 Ferma::~Ferma() { delete[] parcele; parcele = nullptr;}
+
+const Magazin &Ferma::getMagazin() const { return magazin; }
 
 void Ferma::extindeFerma(int parceleAdaugate) {
     if (parceleAdaugate <= 0) {

@@ -94,7 +94,7 @@ void Joc::meniuAnimale() {
 }
 
 void Joc::meniuMagazin() {
-    titlu("MAGAZIN - VANZARE RECOLTA");
+    titlu("MAGAZIN");
     std::cout << "1. Vinde Rosii\n"
             << "2. Vinde Lalele\n"
             << "0. Inapoi\n";
@@ -156,6 +156,7 @@ void Joc::ruleazaJocul() {
                 << "4. Magazin (vinde recolta)\n"
                 << "5. Treci la ziua urmatoare\n"
                 << "6. Gestioneaza ferma (save/load/extinde)\n"
+                << "7. Vezi catalogul magazinului\n"
                 << "0. Iesi din joc\n";
         int opt = citesteInt("> ");
         switch (opt) {
@@ -165,6 +166,7 @@ void Joc::ruleazaJocul() {
             case 4: meniuMagazin();       break;
             case 5: ferma->ziuaUrmatoare(); break;
             case 6: meniuFerma();         break;
+            case 7: std::cout << ferma->getMagazin(); break;
             case 0: ruleaza = false;
                 std::cout << "La revedere! Multumim ca ai jucat!\n";
                 break;
